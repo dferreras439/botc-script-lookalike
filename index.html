@@ -19,16 +19,16 @@
 
       /* hem & backgrounds */
       --hem-color: #333333;
-      --hem-image-url: url('https://media.istockphoto.com/id/1004976308/vector/seamless-background-baroque-style-vintage-pattern-retro-victorian-ornament-in-damascus-style.jpg?s=612x612&w=0&k=20&c=HT7n-GcEymly1BJp8TbUAriQuiHVAgVhU5-5NW9L4N4=');
+      --hem-image-url: url('https://img.freepik.com/free-vector/seamless-background-light-blue-color-damascus-style_1284-47122.jpg?t=st=1752697699~exp=1752701299~hmac=0a617e4eff727e6791763bc9667dd0bb5daa25dfbba430a84b6f3f92847bdf05&w=2000');
       --hem-blend-mode: multiply;
       --hem-mask-url: url('');
 
-      --bg-base-url:     url('https://texturelabs.org/wp-content/uploads/Texturelabs_Paper_329S.jpg');
-      --bg-grunge-url:   url('https://texturelabs.org/wp-content/uploads/Texturelabs_Paper_364S.jpg');
+      --bg-base-url:     url('https://github.com/dferreras439/botc-script-lookalike/blob/main/assets/Texturelabs_Paper_329XL.jpg?raw=true');
+      --bg-grunge-url:   url('https://github.com/dferreras439/botc-script-lookalike/blob/main/assets/Texturelabs_Paper_364XL.jpg?raw=true');
       --bg-magic-url:    url('https://upload.wikimedia.org/wikipedia/commons/5/51/Magic_Circle.png');
       --bg-magic-opacity: 0.1;
 
-      --script-texture-url: url('https://texturelabs.org/wp-content/uploads/Texturelabs_InkPaint_356S.jpg');
+      --script-texture-url: url('https://github.com/dferreras439/botc-script-lookalike/blob/main/assets/Texturelabs_InkPaint_356XL.jpg?raw=true');
 
       /* separator mask */
       --separator-mask-url: url('https://images.vexels.com/media/users/3/132477/isolated/svg/3b36d6c1705c1902d34a84ba17ee531d.svg');
@@ -105,7 +105,7 @@
       inset: 0;
       z-index: 3;
       background-image: var(--hem-image-url, none), linear-gradient(red, var(--hem-color));
-      background-size: auto 40%, cover;
+      background-size: auto 60%, cover;
       background-position: 0 0, center;
       background-repeat: repeat, no-repeat;
       background-blend-mode: var(--hem-blend-mode, color-burn);
@@ -145,7 +145,7 @@
       font-style: italic;
       text-align: center;
       margin: 1em 0;
-      text-shadow: 0 0 5px black;
+      text-shadow: 0 1px 0px black;
       color: white;
     }
     /* Hem labels punch through hem via blending */
@@ -159,10 +159,9 @@
       font-family: var(--role-font-family);
       font-size: 0.9rem;
       font-weight: bold;
-      mix-blend-mode: destination-out;
       pointer-events: none;
       z-index: 4;
-      text-shadow: 0 0 5px black;
+      text-shadow: 0 1px 0px black;
       color: white;
     }
     /* Tables inside preview */
@@ -310,7 +309,7 @@
         <div>
           <label for="hemImageUrl">Hem Image URL:</label>
           <input type="text" id="hemImageUrl"
-            value="https://img.freepik.com/free-vector/botanical-red-pattern-background-vintage-style_53876-112088.jpg?t=st=1752614888~exp=1752618488~hmac=a4c5f6a1f7f3451d87058e37acd7bf661067f3d0b0cc962b03733220788d48c4&amp;w=2000">
+            value="https://img.freepik.com/free-vector/seamless-background-light-blue-color-damascus-style_1284-47122.jpg?t=st=1752697699~exp=1752701299~hmac=0a617e4eff727e6791763bc9667dd0bb5daa25dfbba430a84b6f3f92847bdf05&w=2000">
         </div>
         <div>
           <label for="hemBlendMode">Hem Blend Mode:</label>
@@ -326,12 +325,12 @@
         <div>
           <label for="bgImageUrl">Base Background Image URL:</label>
           <input type="text" id="bgImageUrl"
-            value="https://texturelabs.org/wp-content/uploads/Texturelabs_Paper_329S.jpg">
+            value="https://github.com/dferreras439/botc-script-lookalike/blob/main/assets/Texturelabs_Paper_329XL.jpg?raw=true">
         </div>
         <div>
           <label for="bgGrungeUrl">Grunge Overlay URL:</label>
           <input type="text" id="bgGrungeUrl"
-            value="https://texturelabs.org/wp-content/uploads/Texturelabs_Paper_364S.jpg">
+            value="https://github.com/dferreras439/botc-script-lookalike/blob/main/assets/Texturelabs_Paper_364XL.jpg?raw=true">
         </div>
         <div>
           <label for="bgMagicUrl">Magic Circle Overlay URL:</label>
@@ -388,8 +387,8 @@
           <fieldset id="base3-fieldset">
             <legend>Base 3</legend>
           </fieldset>
-          <fieldset id="carousel15-fieldset">
-            <legend>Carousel 15</legend>
+          <fieldset id="carousel15-fieldset">  
+            <legend>Carousel 15 (13) (plus Catfishing)</legend>
           </fieldset>
         </div>
       </section>
@@ -400,7 +399,7 @@
       <!-- Preview pane -->
       <div id="preview" class="a4 hide-borders">
         <div class="background-container">
-          <img id="bgBaseImage" src="https://texturelabs.org/wp-content/uploads/Texturelabs_Paper_329S.jpg"
+          <img id="bgBaseImage" src="https://github.com/dferreras439/botc-script-lookalike/blob/main/assets/Texturelabs_Paper_329XL.jpg?raw=true"
                alt="Base Texture"
                onerror="this.onerror=null;this.src='https://placehold.co/600x450/cccccc/333333?text=Image+Error'">
           <div id="grungeOverlay"></div>
@@ -510,7 +509,6 @@
       document.documentElement.style.setProperty('--hem-blend-mode', e.target.value);
     };
     document.getElementById('bgImageUrl').oninput = e => {
-      document.documentElement.style.setProperty('--bg-base-url', `url('${e.target.value}')`);
       document.getElementById('bgBaseImage').src = e.target.value;
     };
     document.getElementById('bgGrungeUrl').oninput = e => {
