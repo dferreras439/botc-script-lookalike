@@ -1,612 +1,748 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
-  <meta charset="UTF-8">
-  <title>Role Preview with Wiki Icons &amp; Scraped Abilities</title>
-  <!-- Font links -->
-  <link id="scriptFontLink" rel="stylesheet" href="https://fonts.cdnfonts.com/css/washington-text">
-  <link id="roleFontLink" rel="stylesheet" href="https://fonts.cdnfonts.com/css/foucault">
-  <link id="bodyFontLink" rel="stylesheet" href="https://fonts.cdnfonts.com/css/gentium-book-plus">
-  <style>
-    :root {
-      /* typography */
-      --base-font-size: 12px;
-      --script-title-font-size: 60px;
-      --role-name-scale: 1.2;
-      --ability-lines: 3;
-      --ability-line-height: 1;
-      --cell-padding: 4px;
+    <meta charset="UTF-8">
+    <title>Role Preview with Wiki Icons &amp; Scraped Abilities</title>
+    <!-- Font links -->
+    <link id="scriptFontLink" rel="stylesheet" href="https://fonts.cdnfonts.com/css/washington-text">
+    <link id="roleFontLink" rel="stylesheet" href="https://fonts.cdnfonts.com/css/foucault">
+    <link id="bodyFontLink" rel="stylesheet" href="https://fonts.cdnfonts.com/css/gentium-book-plus">
+    <style>
+        :root {
+            /* typography */
+            --base-font-size: 12px;
+            --script-title-font-size: 60px;
+            --role-name-scale: 1.2;
+            --ability-lines: 3;
+            --ability-line-height: 1;
+            --cell-padding: 4px;
 
-      /* hem & backgrounds */
-      --hem-color: #333333;
-      --hem-image-url: url('https://img.freepik.com/free-vector/seamless-background-light-blue-color-damascus-style_1284-47122.jpg?t=st=1752697699~exp=1752701299~hmac=0a617e4eff727e6791763bc9667dd0bb5daa25dfbba430a84b6f3f92847bdf05&w=2000');
-      --hem-blend-mode: multiply;
-      --hem-mask-url: url('');
+            /* hem & backgrounds */
+            --hem-color: #333333;
+            --hem-image-url: url('https://img.freepik.com/free-vector/seamless-background-light-blue-color-damascus-style_1284-47122.jpg?t=st=1752697699~exp=1752701299~hmac=0a617e4eff727e6791763bc9667dd0bb5daa25dfbba430a84b6f3f92847bdf05&w=2000');
+            --hem-blend-mode: multiply;
+            --hem-mask-url: url('');
 
-      --bg-base-url:     url('https://github.com/dferreras439/botc-script-lookalike/blob/main/assets/Texturelabs_Paper_329XL.jpg?raw=true');
-      --bg-grunge-url:   url('https://github.com/dferreras439/botc-script-lookalike/blob/main/assets/Texturelabs_Paper_364XL.jpg?raw=true');
-      --bg-magic-url:    url('https://upload.wikimedia.org/wikipedia/commons/5/51/Magic_Circle.png');
-      --bg-magic-opacity: 0.1;
+            --bg-base-url: url('https://github.com/dferreras439/botc-script-lookalike/blob/main/assets/Texturelabs_Paper_329XL.jpg?raw=true');
+            --bg-grunge-url: url('https://github.com/dferreras439/botc-script-lookalike/blob/main/assets/Texturelabs_Paper_364XL.jpg?raw=true');
+            --bg-magic-url: url('https://upload.wikimedia.org/wikipedia/commons/5/51/Magic_Circle.png');
+            --bg-magic-opacity: 0.1;
 
-      --script-texture-url: url('https://github.com/dferreras439/botc-script-lookalike/blob/main/assets/Texturelabs_InkPaint_356XL.jpg?raw=true');
+            --script-texture-url: url('https://github.com/dferreras439/botc-script-lookalike/blob/main/assets/Texturelabs_InkPaint_356XL.jpg?raw=true');
 
-      /* separator mask */
-      --separator-mask-url: url('https://images.vexels.com/media/users/3/132477/isolated/svg/3b36d6c1705c1902d34a84ba17ee531d.svg');
+            /* separator mask */
+            --separator-mask-url: url('https://images.vexels.com/media/users/3/132477/isolated/svg/3b36d6c1705c1902d34a84ba17ee531d.svg');
 
-      /* hue rotation */
-      --hue-rotation: 0deg;
+            /* hue rotation */
+            --hue-rotation: 0deg;
 
-      /* font families */
-      --script-font-family: 'Washington Text', serif;
-      --role-font-family: 'Foucault', serif;
-      --body-font-family: 'Gentium Book Plus', serif;
-    }
-    /* Preview container */
-    #preview {
-      position: relative;
-      margin: 1rem auto;
-      padding-left: 2cm; /* reserve hem space */
-      overflow: visible;
-      box-shadow: 0 0 12px black;
-      font-family: var(--body-font-family);
-      font-size: var(--base-font-size);
-    }
-    /* hide only internal cell borders */
-    #preview.hide-borders td { border: none; }
-
-    /* background layering container */
-    .background-container {
-      position: absolute;
-      top: 0; left: 0;
-      width: 100%; height: 100%;
-      overflow: hidden;
-      z-index: 0;
-    }
-    .background-container img {
-      position: absolute;
-      top: 0; left: 0;
-      width: 100%; height: 100%;
-      object-fit: cover;
-      z-index: 0;
-    }
-    #grungeOverlay {
-      position: absolute; top:0; left:0;
-      width:100%; height:100%;
-      background-image: var(--bg-grunge-url);
-      background-size: cover;
-      background-position: center;
-      mix-blend-mode: screen;
-      z-index: 1;
-    }
-    #magicCircleOverlay {
-      position: absolute; top:0; left:0;
-      width:100%; height:100%;
-      background-image: var(--bg-magic-url);
-      background-size: cover;
-      background-position: center;
-      mix-blend-mode: overlay;
-      opacity: var(--bg-magic-opacity);
-      z-index: 2;
-    }
-    #hemOverlay {
-      z-index: 3;
-      position: absolute;
-      top: 0;
-      left: 0;
-      width: 2cm;
-      height: 100%;
-      filter: drop-shadow(0 4px 15px rgba(80,0,0,0.3));
-      -webkit-filter: drop-shadow(2.5mm 0 0 rgba(80,0,0,0.3));
-      mix-blend-mode: var(--hem-blend-mode, normal);
-    }
-    #hemOverlay::before {
-      content: '';
-      position: absolute;
-      inset: 0;
-      z-index: 3;
-      background-image: var(--hem-image-url, none), linear-gradient(red, var(--hem-color));
-      background-size: auto 60%, cover;
-      background-position: 0 0, center;
-      background-repeat: repeat, no-repeat;
-      background-blend-mode: var(--hem-blend-mode, color-burn);
-      -webkit-filter: hue-rotate(var(--hue-rotation,0deg));
-      filter: hue-rotate(var(--hue-rotation,0deg));
-      -webkit-mask-image: conic-gradient(from 225deg, black 90deg, transparent 0);
-      mask-image: conic-gradient(from 225deg, black 90deg, transparent 0);
-      -webkit-mask-repeat: repeat;
-      mask-repeat: repeat;
-      -webkit-mask-size: 4cm 0.7cm;
-      mask-size: 4cm 0.7cm;
-      mask-type: alpha;
-      pointer-events: none;
-    }
-    /* page sizes */
-    #preview.a4     { width: 210mm; height: 297mm; }
-    #preview.letter { width: 8.5in; height: 11in; }
-    /* Title & footer */
-    #preview h1 {
-      position: relative; z-index: 4;
-      font-family: var(--script-font-family);
-      font-size: var(--script-title-font-size);
-      text-align: center;
-      margin: 0.5rem 0;
-      background: var(--script-texture-url) center/cover no-repeat;
-      -webkit-background-clip: text;
-      background-clip: text;
-      color: transparent;
-      filter: hue-rotate(var(--hue-rotation));
-    }
-    #preview footer {
-      position: absolute;
-      bottom: 0; left: 0; right: 0;
-      z-index: 4;
-      font-family: var(--body-font-family);
-      font-size: 0.85rem;
-      font-style: italic;
-      text-align: center;
-      margin: 1em 0;
-      text-shadow: 0 1px 0px black;
-      color: white;
-    }
-    /* Hem labels punch through hem via blending */
-    .label-left {
-      display: flex;
-      align-items: center;
-      position: absolute; top: 0; left: 0;
-      width: 2cm;
-      writing-mode: vertical-rl;
-      text-orientation: upright;
-      font-family: var(--role-font-family);
-      font-size: 0.9rem;
-      font-weight: bold;
-      pointer-events: none;
-      z-index: 4;
-      text-shadow: 0 1px 0px black;
-      color: white;
-    }
-    /* Tables inside preview */
-    .tables {
-      position: relative; z-index: 4;
-      padding: 0 1rem 1rem;
-      box-sizing: border-box;
-    }
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      table-layout: fixed;
-      margin-bottom: 0rem;
-    }
-    td {
-      border: 1px solid var(--hem-color);
-      padding: var(--cell-padding);
-      vertical-align: top;
-    }
-    .cell {
-      display: flex;
-      gap: 0.4rem;
-      align-items: center;
-    }
-    .cell img.icon {
-      width: var(--cell-height);
-      height: var(--cell-height);
-      object-fit: contain;
-      flex-shrink: 0;
-      scale: 1.4;
-    }
-    .role-name {
-      font-family: var(--role-font-family);
-      font-weight: bold;
-      font-size: calc(var(--role-name-scale) * 1em);
-      line-height: 1em;
-      margin-bottom: 0.2rem;
-    }
-    .ability {
-      font-family: var(--body-font-family);
-      font-size: 1em;
-      line-height: var(--ability-line-height);
-      height: calc(var(--ability-line-height) * var(--ability-lines) * 1em);
-      overflow: hidden;
-      white-space: pre-wrap;
-    }
-    .separator {
-      width: 80%;
-      height: 40px;
-      margin: auto;
-      background-image: var(--separator-mask-url);
-      background-repeat: no-repeat;
-      background-position: center;
-      background-size: 50% auto;
-      filter: invert(1) brightness(0.2) sepia(1) hue-rotate(320deg) saturate(5) 
-              hue-rotate(var(--hue-rotation));
-    }
-    /* Layout for configuration sidebar and preview */
-    .container {
-      display: flex;
-      height: 100vh;
-    }
-    .config {
-      flex: 0 0 300px;
-      padding: 1rem;
-      overflow-y: auto;
-      border-right: 1px solid #ccc;
-      background: #f9f9f9;
-    }
-    .preview-container {
-      flex: 1;
-      overflow: auto;
-      padding: 1rem;
-    }
-    /* Print-specific styles */
-    @media print {
-      @page { size: A4 portrait; margin: 0; }
-      body * { visibility: hidden !important; }
-      #preview, #preview * { visibility: visible !important; }
-      #preview {
-        position: absolute;
-        top: 0; left: 0;
-        margin: 0;
-        box-shadow: none;
-        width: auto; height: auto;
-        box-sizing: border-box;
-      }
-      /* ensure backgrounds & colors print */
-      #preview .background-container,
-      #preview h1,
-      #preview .tables,
-      #preview footer {
-        -webkit-print-color-adjust: exact;
-        print-color-adjust: exact;
-      }
-    }
-  </style>
-</head>
-<body>
-  <div class="container">
-    <aside class="config">
-      <h2>Configuration</h2>
-      <p>Use these controls to adjust fonts, backgrounds, and the role-preview settings.</p>
-
-      <section>
-        <h3>Page Format</h3>
-        <p>Select paper size and toggle cell borders.</p>
-        <button id="toggle">Toggle Letter/A4 Format</button>
-        <button id="toggleBorders" title="Toggle only the internal table cell borders; the hem stays visible">
-          Toggle Cell Borders
-        </button>
-      </section>
-
-      <section>
-        <h3>Font Settings</h3>
-        <p>Adjust base font size, script-title font size, and font URLs.</p>
-        <div>
-          <label for="fontSizeInput">Base Font Size (px):</label>
-          <input type="number" id="fontSizeInput" min="8" max="72" value="12">
-        </div>
-        <div>
-          <label for="titleFontSizeInput">Script Title Font Size (px):</label>
-          <input type="number" id="titleFontSizeInput" min="8" max="200" value="60">
-        </div>
-        <div>
-          <label for="scriptFontUrlInput">Script Title Font CSS URL:</label>
-          <input type="text" id="scriptFontUrlInput"
-            value="https://fonts.cdnfonts.com/css/washington-text">
-        </div>
-        <div>
-          <label for="roleFontUrlInput">Role Name &amp; Hem Font CSS URL:</label>
-          <input type="text" id="roleFontUrlInput"
-            value="https://fonts.cdnfonts.com/css/foucault">
-        </div>
-        <div>
-          <label for="bodyFontUrlInput">Body Font CSS URL:</label>
-          <input type="text" id="bodyFontUrlInput"
-            value="https://fonts.cdnfonts.com/css/gentium-book-plus">
-        </div>
-      </section>
-
-      <section>
-        <h3>Hem &amp; Background</h3>
-        <p>Customize hem image, blend mode, and background overlays.</p>
-        <div>
-          <label for="hemImageUrl">Hem Image URL:</label>
-          <input type="text" id="hemImageUrl"
-            value="https://img.freepik.com/free-vector/seamless-background-light-blue-color-damascus-style_1284-47122.jpg?t=st=1752697699~exp=1752701299~hmac=0a617e4eff727e6791763bc9667dd0bb5daa25dfbba430a84b6f3f92847bdf05&w=2000">
-        </div>
-        <div>
-          <label for="hemBlendMode">Hem Blend Mode:</label>
-          <select id="hemBlendMode">
-            <option>normal</option>
-            <option selected>multiply</option>
-            <option>screen</option>
-            <option>overlay</option>
-            <option>darken</option>
-            <option>lighten</option>
-          </select>
-        </div>
-        <div>
-          <label for="bgImageUrl">Base Background Image URL:</label>
-          <input type="text" id="bgImageUrl"
-            value="https://github.com/dferreras439/botc-script-lookalike/blob/main/assets/Texturelabs_Paper_329XL.jpg?raw=true">
-        </div>
-        <div>
-          <label for="bgGrungeUrl">Grunge Overlay URL:</label>
-          <input type="text" id="bgGrungeUrl"
-            value="https://github.com/dferreras439/botc-script-lookalike/blob/main/assets/Texturelabs_Paper_364XL.jpg?raw=true">
-        </div>
-        <div>
-          <label for="bgMagicUrl">Magic Circle Overlay URL:</label>
-          <input type="text" id="bgMagicUrl"
-            value="https://upload.wikimedia.org/wikipedia/commons/5/51/Magic_Circle.png">
-        </div>
-        <div>
-          <label for="bgMagicOpacity">Magic Circle Opacity (%):</label>
-          <input type="number" id="bgMagicOpacity" min="0" max="100" value="10">
-        </div>
-      </section>
-
-      <section>
-        <h3>Color Effects</h3>
-        <p>Adjust hue rotation of overlays and hem.</p>
-        <div>
-          <label for="hueRotation">Hue Rotation (°):</label>
-          <input type="range" id="hueRotation" min="0" max="360" value="0">
-        </div>
-      </section>
-
-      <section>
-        <h3>Generate Preview</h3>
-        <p>Load the JSON configuration and render the preview.</p>
-        <button id="load">Load / Generate / Render</button>
-      </section>
-
-      <section>
-        <h3>JSON Input</h3>
-        <p>Enter the role configuration as a JSON array (first element is meta).</p>
-        <textarea id="json-input" style="width:100%;height:4em;">[{"id":"_meta","author":"","name":"Trouble Brewing"},"chef","investigator","washerwoman","librarian","empath","fortuneteller","undertaker","monk","slayer","soldier","ravenkeeper","mayor","virgin","butler","drunk","recluse","saint","poisoner","spy","scarletwoman","baron","imp"]</textarea>
-      </section>
-
-      <section>
-        <h3>Script Title Override</h3>
-        <p>Provide a custom script title to override the meta name.</p>
-        <div>
-          <label for="titleOverride">Script Title Override:</label>
-          <input type="text" id="titleOverride" placeholder="Custom script title">
-        </div>
-      </section>
-
-      <section>
-        <h3>Icon Source</h3>
-        <div>
-          <input type="checkbox" id="useTownhallIcons" checked>
-          <label for="useTownhallIcons">Use Townhall Icons</label>
-        </div>
-      </section>
-
-      <section>
-        <h3>Load Script from Super JSON</h3>
-        <div id="script-selection">
-          <fieldset id="base3-fieldset">
-            <legend>Base 3</legend>
-          </fieldset>
-          <fieldset id="carousel15-fieldset">  
-            <legend>Carousel 15 (13) (plus Catfishing)</legend>
-          </fieldset>
-        </div>
-      </section>
-
-    </aside>
-
-    <main class="preview-container">
-      <!-- Preview pane -->
-      <div id="preview" class="a4 hide-borders">
-        <div class="background-container">
-          <img id="bgBaseImage" src="https://github.com/dferreras439/botc-script-lookalike/blob/main/assets/Texturelabs_Paper_329XL.jpg?raw=true"
-               alt="Base Texture"
-               onerror="this.onerror=null;this.src='https://placehold.co/600x450/cccccc/333333?text=Image+Error'">
-          <div id="grungeOverlay"></div>
-          <div id="magicCircleOverlay"></div>
-          <div id="hemOverlay"></div>
-        </div>
-        <h1>Script Title</h1>
-        <div class="label-left" data-group="townsfolk">TOWNSFOLK</div>
-        <div class="label-left" data-group="outsiders">OUTSIDERS</div>
-        <div class="label-left" data-group="minions">MINIONS</div>
-        <div class="label-left" data-group="demons">DEMONS</div>
-        <div class="tables"></div>
-        <footer>*Not the <br>first night</footer>
-      </div>
-    </main>
-  </div>
-
-  <script>
-    const CONFIG = {
-      rows: { townsfolk:7, outsiders:2, minions:2, demons:2 },
-      roleNameScale: 1.2,
-      abilityLines: 3,
-      abilityLineHeight: 1,
-      cellPadding: 4
-    };
-    const GROUP_ORDER = ['townsfolk','outsiders','minions','demons'];
-    const WIKI_BASE_URL = 'https://wiki.bloodontheclocktower.com';
-    const ROLES_URL = 'https://raw.githubusercontent.com/nicholas-eden/townsquare/develop/src/roles.json';
-    const GIST_URL  = 'https://gist.githubusercontent.com/dferreras439/f219e5cdeaa3d0ea1098a50d919a3c28/raw/af6d30cd9569962c396df8d9f01e5c204c540ec1/botc-wiki-ability-and-big_icon.json';
-    const ALT_URL   = 'https://gist.githubusercontent.com/dferreras439/bff28039ca5a7cd48b9c7eb81a055e2f/raw/d8b89b1a6a1ba3778e15443a5c5ae9373e5f90d4/townhall-icons.json';
-    const SUPER_JSON_URL = 'https://gist.githubusercontent.com/dferreras439/c2de0e756dab385f1f3c4ca7579d32b9/raw/60cc91de02cb8c4dd0dda136932444511264fe32/botc-base3-and-carousel15.json';
-
-    let rolesById = {};
-    let scrapedById = {};
-    let altIconsById = {};
-
-    function applyConfig() {
-      const preview = document.getElementById('preview');
-      const cs = getComputedStyle(preview);
-      const base = parseFloat(cs.getPropertyValue('--base-font-size'));
-      const roleScale = parseFloat(cs.getPropertyValue('--role-name-scale'));
-      const lines = parseFloat(cs.getPropertyValue('--ability-lines'));
-      const lh = parseFloat(cs.getPropertyValue('--ability-line-height'));
-      const pad = parseFloat(cs.getPropertyValue('--cell-padding'));
-      const rnH = base * roleScale;
-      const abH = base * lines * lh;
-      const cellH = rnH + abH + pad*2;
-      document.documentElement.style.setProperty('--cell-height', cellH + 'px');
-      return cellH;
-    }
-
-    function deriveFontName(url) {
-      let name = url.split('/').pop().replace(/\.css$/,'');
-      name = decodeURIComponent(name).replace(/[^a-zA-Z0-9]+/g,' ').trim();
-      return name.split(' ').map(w=>w[0]?.toUpperCase()+w.slice(1)).join(' ');
-    }
-
-    function doubleAlign() {
-      alignAndSize();
-      setTimeout(alignAndSize, 50);
-    }
-
-    // simple string-to-hue hash (deterministic)
-    function computeHueRotation(str) {
-      let hash = 0;
-      for (let i = 0; i < str.length; i++) {
-        hash = (hash * 31 + str.charCodeAt(i)) % 360;
-      }
-      return hash;
-    }
-
-    // Control handlers
-    document.getElementById('toggle').onclick = () => {
-      const p = document.getElementById('preview');
-      p.classList.toggle('a4');
-      p.classList.toggle('letter');
-      doubleAlign();
-    };
-    document.getElementById('toggleBorders').onclick = () => {
-      document.getElementById('preview').classList.toggle('hide-borders');
-    };
-    document.getElementById('fontSizeInput').oninput = e => {
-      document.documentElement.style.setProperty('--base-font-size', e.target.value + 'px');
-      applyConfig();
-      doubleAlign();
-    };
-    document.getElementById('titleFontSizeInput').oninput = e => {
-      document.documentElement.style.setProperty('--script-title-font-size', e.target.value + 'px');
-    };
-    ['scriptFontUrlInput','roleFontUrlInput','bodyFontUrlInput'].forEach(id => {
-      document.getElementById(id).onchange = e => {
-        const linkId = id === 'scriptFontUrlInput' ? 'scriptFontLink'
-                     : id === 'roleFontUrlInput'   ? 'roleFontLink'
-                     : 'bodyFontLink';
-        document.getElementById(linkId).href = e.target.value;
-        const varName = id === 'scriptFontUrlInput' ? '--script-font-family'
-                       : id === 'roleFontUrlInput'   ? '--role-font-family'
-                       : '--body-font-family';
-        document.documentElement.style.setProperty(varName,
-          `'${deriveFontName(e.target.value)}', serif`);
-      };
-    });
-    document.getElementById('hemImageUrl').oninput = e => {
-      document.documentElement.style.setProperty('--hem-image-url', `url('${e.target.value}')`);
-    };
-    document.getElementById('hemBlendMode').onchange = e => {
-      document.documentElement.style.setProperty('--hem-blend-mode', e.target.value);
-    };
-    document.getElementById('bgImageUrl').oninput = e => {
-      document.getElementById('bgBaseImage').src = e.target.value;
-    };
-    document.getElementById('bgGrungeUrl').oninput = e => {
-      document.documentElement.style.setProperty('--bg-grunge-url', `url('${e.target.value}')`);
-    };
-    document.getElementById('bgMagicUrl').oninput = e => {
-      document.documentElement.style.setProperty('--bg-magic-url', `url('${e.target.value}')`);
-    };
-    document.getElementById('bgMagicOpacity').oninput = e => {
-      const o = e.target.value/100;
-      document.documentElement.style.setProperty('--bg-magic-opacity', o.toString());
-      document.getElementById('magicCircleOverlay').style.opacity = o;
-    };
-    document.getElementById('hueRotation').oninput = e => {
-      document.documentElement.style.setProperty('--hue-rotation', e.target.value + 'deg');
-    };
-
-    // Re-render when the checkbox changes
-    document.getElementById('useTownhallIcons').onchange = () => {
-      document.getElementById('load').click();
-    };
-
-    // Main load/render routine
-    document.getElementById('load').onclick = () => {
-      const useTownhallIcons = document.getElementById('useTownhallIcons').checked;
-      let arr;
-      try {
-        arr = JSON.parse(document.getElementById('json-input').value);
-      } catch {
-        return alert('Invalid JSON');
-      }
-      if (!Array.isArray(arr) || arr.length === 0) {
-        return alert('JSON must be an array with at least a meta object');
-      }
-      const [meta, ...rawItems] = arr;
-      // apply script title override if provided
-      const override = document.getElementById('titleOverride').value.trim();
-      const title = override || ((meta && meta.name) ? meta.name : 'Script Title');
-      document.querySelector('#preview h1').textContent = title;
-
-      // new feature: deterministic hue based on script title
-      const hue = computeHueRotation(title);
-      document.documentElement.style.setProperty('--hue-rotation', hue + 'deg');
-      document.getElementById('hueRotation').value = hue;
-
-      const ids = rawItems.map(item => {
-        let idStr = '';
-        if (typeof item === 'string') {
-          idStr = item;
-        } else if (item && typeof item.id === 'string') {
-          idStr = item.id;
-        } else {
-          return '';
+            /* font families */
+            --script-font-family: 'Washington Text', serif;
+            --role-font-family: 'Foucault', serif;
+            --body-font-family: 'Gentium Book Plus', serif;
         }
-        return idStr.replace(/[\s_-]/g, '').toLowerCase();
-      }).filter(id => id);
 
-      const defs = ids.map(id => {
-        const def = rolesById[id];
-        if (!def) return null;
-        const scraped = scrapedById[id] || {};
-        return {
-          id,
-          name: scraped.name || def.name,
-          team: def.team,
-          big_icon: scraped.big_icon,
-          ability: scraped.ability
+        /* Preview container */
+        #preview {
+            position: relative;
+            margin: 1rem auto;
+            padding-left: 2cm;
+            /* reserve hem space */
+            overflow: visible;
+            box-shadow: 0 0 12px black;
+            font-family: var(--body-font-family);
+            font-size: var(--base-font-size);
+            overflow: hidden;
+            box-sizing: border-box;
+        }
+
+        /* hide only internal cell borders */
+        #preview.hide-borders td {
+            border: none;
+        }
+
+        /* background layering container */
+        .background-container {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            z-index: 0;
+        }
+
+        .background-container img {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            z-index: 0;
+        }
+
+        #grungeOverlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: var(--bg-grunge-url);
+            background-size: cover;
+            background-position: center;
+            mix-blend-mode: screen;
+            z-index: 1;
+        }
+
+        #magicCircleOverlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: var(--bg-magic-url);
+            background-size: cover;
+            background-position: center;
+            mix-blend-mode: overlay;
+            opacity: var(--bg-magic-opacity);
+            z-index: 2;
+        }
+
+        #hemOverlay {
+            z-index: 3;
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 2cm;
+            height: 100%;
+            filter: drop-shadow(0 4px 15px rgba(80, 0, 0, 0.3));
+            -webkit-filter: drop-shadow(2.5mm 0 0 rgba(80, 0, 0, 0.3));
+            mix-blend-mode: var(--hem-blend-mode, normal);
+        }
+
+        #hemOverlay::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            z-index: 3;
+            background-image: var(--hem-image-url, none), linear-gradient(red, var(--hem-color));
+            background-size: auto 60%, cover;
+            background-position: 0 0, center;
+            background-repeat: repeat, no-repeat;
+            background-blend-mode: var(--hem-blend-mode, color-burn);
+            -webkit-filter: hue-rotate(var(--hue-rotation, 0deg));
+            filter: hue-rotate(var(--hue-rotation, 0deg));
+            -webkit-mask-image: conic-gradient(from 225deg, black 90deg, transparent 0);
+            mask-image: conic-gradient(from 225deg, black 90deg, transparent 0);
+            -webkit-mask-repeat: repeat;
+            mask-repeat: repeat;
+            -webkit-mask-size: 4cm 0.7cm;
+            mask-size: 4cm 0.7cm;
+            mask-type: alpha;
+            pointer-events: none;
+        }
+
+        /* page sizes */
+        #preview.a4 {
+            width: 210mm;
+            height: 297mm;
+        }
+
+        #preview.letter {
+            width: 8.5in;
+            height: 11in;
+        }
+
+        /* Title & footer */
+        #preview h1 {
+            position: relative;
+            z-index: 4;
+            font-family: var(--script-font-family);
+            font-size: var(--script-title-font-size);
+            text-align: center;
+            margin: 0.5rem 0;
+            background: var(--script-texture-url) center/cover no-repeat;
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            filter: hue-rotate(var(--hue-rotation));
+            border
+        }
+
+        /* Single image behind the H1 */
+        #preview h1::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 100%;
+            /* adjust to your image’s aspect ratio */
+            height: 100%;
+            -background-image: url('https://www.shutterstock.com/image-vector/floral-border-seamless-pattern-beautiful-260nw-2361439491.jpg');
+            background-size: contain;
+            /* or cover, as needed */
+            background-repeat: no-repeat;
+            background-position: center;
+            opacity: 1.5;
+            /* dial back if you want it subtle */
+            z-index: -1;
+            /* behind the text */
+        }
+
+
+
+
+
+
+        #preview footer {
+            position: absolute;
+            bottom: 0;
+            left: 2cm;
+            right: 0;
+            z-index: 4;
+            font-family: var(--body-font-family);
+            font-size: 0.85rem;
+            font-style: italic;
+            text-align: center;
+            margin: 1em 0;
+            text-shadow: 0 1px 5px black;
+            color: white;
+        }
+
+
+
+        /* 1) the skull image behind everything */
+        #preview footer::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) rotate(-20deg);
+            width: 16em;
+            /* bigger than your circle */
+            height: 16em;
+            -background:
+                url('https://images.vexels.com/media/users/3/281293/isolated/preview/513e8e10b307924a0928e17b8293fd3f-animal-mushroom-deer-skull.png?w=360') center/contain no-repeat;
+            z-index: -2;
+            /* behind the circle */
+            opacity: 30%;
+        }
+
+        /* 2) the white/semi-transparent circle on top of it */
+        #preview footer::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -42%);
+            width: 8em;
+            /* your circle diameter */
+            height: 8em;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 50%;
+            z-index: -1;
+            /* above the image, below your text */
+        }
+
+        /* Hem labels punch through hem via blending */
+        .label-left {
+            display: flex;
+            align-items: center;
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 2cm;
+            writing-mode: vertical-rl;
+            text-orientation: upright;
+            font-family: var(--role-font-family);
+            font-size: 0.9rem;
+            font-weight: bold;
+            mix-blend-mode: destination-out;
+            pointer-events: none;
+            z-index: 4;
+            text-shadow: 0 1px 5px black;
+            color: white;
+        }
+
+        /* Tables inside preview */
+        .tables {
+            position: relative;
+            z-index: 4;
+            padding: 0 1rem 1rem;
+            box-sizing: border-box;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            table-layout: fixed;
+            margin-bottom: 0rem;
+        }
+
+        td {
+            border: 1px solid var(--hem-color);
+            padding: var(--cell-padding);
+            vertical-align: top;
+        }
+
+        .cell {
+            display: flex;
+            gap: 0.4rem;
+            align-items: center;
+        }
+
+        .cell img.icon {
+            width: var(--cell-height);
+            height: var(--cell-height);
+            object-fit: contain;
+            flex-shrink: 0;
+            scale: 1.4;
+        }
+
+        .role-name {
+            font-family: var(--role-font-family);
+            font-weight: bold;
+            font-size: calc(var(--role-name-scale) * 1em);
+            line-height: 1em;
+            margin-bottom: 0.2rem;
+        }
+
+        .ability {
+            font-family: var(--body-font-family);
+            font-size: 1em;
+            line-height: var(--ability-line-height);
+            height: calc(var(--ability-line-height) * var(--ability-lines) * 1em);
+            overflow: hidden;
+            white-space: pre-wrap;
+        }
+
+        .separator {
+            width: 80%;
+            height: 40px;
+            margin: auto;
+            background-image: var(--separator-mask-url);
+            background-repeat: no-repeat;
+            background-position: center;
+            background-size: 50% auto;
+            filter: invert(1) brightness(0.2) sepia(1) hue-rotate(320deg) saturate(5) hue-rotate(var(--hue-rotation));
+        }
+
+        /* Layout for configuration sidebar and preview */
+        .container {
+            display: flex;
+            height: 100vh;
+        }
+
+        .config {
+            flex: 0 0 300px;
+            padding: 1rem;
+            overflow-y: auto;
+            border-right: 1px solid #ccc;
+            background: #f9f9f9;
+        }
+
+        .preview-container {
+            flex: 1;
+            overflow: auto;
+            padding: 1rem;
+        }
+
+        /* Print-specific styles */
+        @media print {
+            @page {
+                size: A4 portrait;
+                margin: 0;
+            }
+
+            body * {
+                visibility: hidden !important;
+            }
+
+            #preview,
+            #preview * {
+                visibility: visible !important;
+                -webkit-print-color-adjust: exact !important;
+                print-color-adjust: exact !important;
+            }
+
+            /*!!!Will this fix the grey bg???*/
+            #preview {
+                position: absolute;
+                top: 0;
+                left: 0;
+                margin: 0;
+                box-shadow: none;
+                overflow: hidden !important;
+                box-sizing: border-box;
+            }
+
+            /* ensure backgrounds & colors print */
+            #preview .background-container,
+            #preview h1,
+            #preview .tables,
+            #preview footer,
+            #preview .label-left {
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+
+                -webkit-filter: blur(0);
+                /*!!!Magic sauce to make text shadows work*/
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <aside class="config">
+            <h2>Configuration</h2>
+            <p>Use these controls to adjust fonts, backgrounds, and the role-preview settings.</p>
+
+            <section>
+                <h3>Page Format</h3>
+                <p>Select paper size and toggle cell borders.</p>
+                <button id="toggle">Toggle Letter/A4 Format</button>
+                <button id="toggleBorders" title="Toggle only the internal table cell borders; the hem stays visible">
+                    Toggle Cell Borders
+                </button>
+            </section>
+
+            <section>
+                <h3>Font Settings</h3>
+                <p>Adjust base font size, script-title font size, and font URLs.</p>
+                <div>
+                    <label for="fontSizeInput">Base Font Size (px):</label>
+                    <input type="number" id="fontSizeInput" min="8" max="72" value="12">
+                </div>
+                <div>
+                    <label for="titleFontSizeInput">Script Title Font Size (px):</label>
+                    <input type="number" id="titleFontSizeInput" min="8" max="200" value="60">
+                </div>
+                <div>
+                    <label for="scriptFontUrlInput">Script Title Font CSS URL:</label>
+                    <input type="text" id="scriptFontUrlInput" value="https://fonts.cdnfonts.com/css/washington-text">
+                </div>
+                <div>
+                    <label for="roleFontUrlInput">Role Name &amp; Hem Font CSS URL:</label>
+                    <input type="text" id="roleFontUrlInput" value="https://fonts.cdnfonts.com/css/foucault">
+                </div>
+                <div>
+                    <label for="bodyFontUrlInput">Body Font CSS URL:</label>
+                    <input type="text" id="bodyFontUrlInput" value="https://fonts.cdnfonts.com/css/gentium-book-plus">
+                </div>
+            </section>
+
+            <section>
+                <h3>Hem &amp; Background</h3>
+                <p>Customize hem image, blend mode, and background overlays.</p>
+                <div>
+                    <label for="hemImageUrl">Hem Image URL:</label>
+                    <input type="text" id="hemImageUrl" value="https://img.freepik.com/free-vector/seamless-background-light-blue-color-damascus-style_1284-47122.jpg?t=st=1752697699~exp=1752701299~hmac=0a617e4eff727e6791763bc9667dd0bb5daa25dfbba430a84b6f3f92847bdf05&w=2000">
+                </div>
+                <div>
+                    <label for="hemBlendMode">Hem Blend Mode:</label>
+                    <select id="hemBlendMode">
+                        <option>normal</option>
+                        <option selected>multiply</option>
+                        <option>screen</option>
+                        <option>overlay</option>
+                        <option>darken</option>
+                        <option>lighten</option>
+                    </select>
+                </div>
+                <div>
+                    <label for="bgImageUrl">Base Background Image URL:</label>
+                    <input type="text" id="bgImageUrl" value="https://github.com/dferreras439/botc-script-lookalike/blob/main/assets/Texturelabs_Paper_329XL.jpg?raw=true">
+                </div>
+                <div>
+                    <label for="bgGrungeUrl">Grunge Overlay URL:</label>
+                    <input type="text" id="bgGrungeUrl" value="https://github.com/dferreras439/botc-script-lookalike/blob/main/assets/Texturelabs_Paper_364XL.jpg?raw=true">
+                </div>
+                <div>
+                    <label for="bgMagicUrl">Magic Circle Overlay URL:</label>
+                    <input type="text" id="bgMagicUrl" value="https://upload.wikimedia.org/wikipedia/commons/5/51/Magic_Circle.png">
+                </div>
+                <div>
+                    <label for="bgMagicOpacity">Magic Circle Opacity (%):</label>
+                    <input type="number" id="bgMagicOpacity" min="0" max="100" value="10">
+                </div>
+            </section>
+
+            <section>
+                <h3>Color Effects</h3>
+                <p>Adjust hue rotation of overlays and hem.</p>
+                <div>
+                    <label for="hueRotation">Hue Rotation (°):</label>
+                    <input type="range" id="hueRotation" min="0" max="360" value="0">
+                </div>
+            </section>
+
+            <section>
+                <h3>Generate Preview</h3>
+                <p>Load the JSON configuration and render the preview.</p>
+                <button id="load">Load / Generate / Render</button>
+            </section>
+
+            <section>
+                <h3>JSON Input</h3>
+                <p>Enter the role configuration as a JSON array (first element is meta).</p>
+                <textarea id="json-input" style="width:100%;height:4em;">[{"id":"_meta","author":"","name":"Trouble Brewing"},"chef","investigator","washerwoman","librarian","empath","fortuneteller","undertaker","monk","slayer","soldier","ravenkeeper","mayor","virgin","butler","drunk","recluse","saint","poisoner","spy","scarletwoman","baron","imp"]</textarea>
+            </section>
+
+            <section>
+                <h3>Script Title Override</h3>
+                <p>Provide a custom script title to override the meta name.</p>
+                <div>
+                    <label for="titleOverride">Script Title Override:</label>
+                    <input type="text" id="titleOverride" placeholder="Custom script title">
+                </div>
+            </section>
+
+            <section>
+                <h3>Icon Source</h3>
+                <div>
+                    <input type="checkbox" id="useTownhallIcons" checked>
+                    <label for="useTownhallIcons">Use Townhall Icons</label>
+                </div>
+            </section>
+
+            <section>
+                <h3>Load Script from Super JSON</h3>
+                <div id="script-selection">
+                    <fieldset id="base3-fieldset">
+                        <legend>Base 3</legend>
+                    </fieldset>
+                    <fieldset id="carousel15-fieldset">
+                        <legend>Carousel 15</legend>
+                    </fieldset>
+                </div>
+            </section>
+
+        </aside>
+
+        <main class="preview-container">
+            <!-- Preview pane -->
+            <div id="preview" class="a4 hide-borders">
+                <div class="background-container">
+                    <img id="bgBaseImage" src="https://github.com/dferreras439/botc-script-lookalike/blob/main/assets/Texturelabs_Paper_329XL.jpg?raw=true" alt="Base Texture" onerror="this.onerror=null;this.src='https://placehold.co/600x450/cccccc/333333?text=Image+Error'">
+                    <div id="grungeOverlay"></div>
+                    <div id="magicCircleOverlay"></div>
+                    <div id="hemOverlay"></div>
+                </div>
+                <h1>Script Title</h1>
+                <div class="label-left" data-group="townsfolk">TOWNSFOLK</div>
+                <div class="label-left" data-group="outsiders">OUTSIDERS</div>
+                <div class="label-left" data-group="minions">MINIONS</div>
+                <div class="label-left" data-group="demons">DEMONS</div>
+                <div class="tables"></div>
+                <footer>*Not the <br>first night</footer>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        const CONFIG = {
+            rows: {
+                townsfolk: 7,
+                outsiders: 2,
+                minions: 2,
+                demons: 2
+            },
+            roleNameScale: 1.2,
+            abilityLines: 3,
+            abilityLineHeight: 1,
+            cellPadding: 4
         };
-      }).filter(Boolean);
+        const GROUP_ORDER = ['townsfolk', 'outsiders', 'minions', 'demons'];
+        const WIKI_BASE_URL = 'https://wiki.bloodontheclocktower.com';
+        const ROLES_URL = 'https://raw.githubusercontent.com/nicholas-eden/townsquare/develop/src/roles.json';
+        const GIST_URL = 'https://gist.githubusercontent.com/dferreras439/f219e5cdeaa3d0ea1098a50d919a3c28/raw/af6d30cd9569962c396df8d9f01e5c204c540ec1/botc-wiki-ability-and-big_icon.json';
+        const ALT_URL = 'https://gist.githubusercontent.com/dferreras439/bff28039ca5a7cd48b9c7eb81a055e2f/raw/d8b89b1a6a1ba3778e15443a5c5ae9373e5f90d4/townhall-icons.json';
+        const SUPER_JSON_URL = 'https://gist.githubusercontent.com/dferreras439/c2de0e756dab385f1f3c4ca7579d32b9/raw/60cc91de02cb8c4dd0dda136932444511264fe32/botc-base3-and-carousel15.json';
 
-      const grouped = GROUP_ORDER.map(g => {
-        const sing = g.endsWith('s') ? g.slice(0,-1) : g;
-        return { group: g, roles: defs.filter(d => d.team === sing) };
-      });
+        let rolesById = {};
+        let scrapedById = {};
+        let altIconsById = {};
 
-      const tablesDiv = document.querySelector('#preview .tables');
-      tablesDiv.innerHTML = '';
-      const cellH = applyConfig();
+        function applyConfig() {
+            const preview = document.getElementById('preview');
+            const cs = getComputedStyle(preview);
+            const base = parseFloat(cs.getPropertyValue('--base-font-size'));
+            const roleScale = parseFloat(cs.getPropertyValue('--role-name-scale'));
+            const lines = parseFloat(cs.getPropertyValue('--ability-lines'));
+            const lh = parseFloat(cs.getPropertyValue('--ability-line-height'));
+            const pad = parseFloat(cs.getPropertyValue('--cell-padding'));
+            const rnH = base * roleScale;
+            const abH = base * lines * lh;
+            const cellH = rnH + abH + pad * 2;
+            document.documentElement.style.setProperty('--cell-height', cellH + 'px');
+            return cellH;
+        }
 
-      grouped.forEach((cat, idx) => {
-        const tbl = document.createElement('table');
-        tbl.dataset.group = cat.group;
-        let row;
-        cat.roles.forEach((r, i) => {
-          if (i % 2 === 0) row = document.createElement('tr');
-          const td = document.createElement('td');
+        function deriveFontName(url) {
+            let name = url.split('/').pop().replace(/\.css$/, '');
+            name = decodeURIComponent(name).replace(/[^a-zA-Z0-9]+/g, ' ').trim();
+            return name.split(' ').map(w => w[0]?.toUpperCase() + w.slice(1)).join(' ');
+        }
 
-          // choose icon URL
-          let iconUrl = '';
-          if (useTownhallIcons) {
-            iconUrl = altIconsById[r.id] || '';
-          } else {
-            iconUrl = r.big_icon ? WIKI_BASE_URL + r.big_icon : '';
-          }
+        function doubleAlign() {
+            alignAndSize();
+            setTimeout(alignAndSize, 50);
+        }
 
-          const color = (cat.group==='minions'||cat.group==='demons') ? '#5C1F22' : '#0646ad';
-          const abilityHtml = r.ability ? r.ability.replace(/\n/g,'<br>') : '';
-          td.innerHTML = `
+        // simple string-to-hue hash (deterministic)
+        function computeHueRotation(str) {
+            let hash = 0;
+            for (let i = 0; i < str.length; i++) {
+                hash = (hash * 31 + str.charCodeAt(i)) % 360;
+            }
+            return (hash -223 ) % 360; // TB RED FOREVER!!!
+        }
+
+        // Control handlers
+        document.getElementById('toggle').onclick = () => {
+            const p = document.getElementById('preview');
+            p.classList.toggle('a4');
+            p.classList.toggle('letter');
+            doubleAlign();
+        };
+        document.getElementById('toggleBorders').onclick = () => {
+            document.getElementById('preview').classList.toggle('hide-borders');
+        };
+        document.getElementById('fontSizeInput').oninput = e => {
+            document.documentElement.style.setProperty('--base-font-size', e.target.value + 'px');
+            applyConfig();
+            doubleAlign();
+        };
+        document.getElementById('titleFontSizeInput').oninput = e => {
+            document.documentElement.style.setProperty('--script-title-font-size', e.target.value + 'px');
+            setTimeout(doubleAlign, 0);
+        };
+        ['scriptFontUrlInput', 'roleFontUrlInput', 'bodyFontUrlInput'].forEach(id => {
+            document.getElementById(id).onchange = e => {
+                const linkId = id === 'scriptFontUrlInput' ? 'scriptFontLink' :
+                    id === 'roleFontUrlInput' ? 'roleFontLink' :
+                    'bodyFontLink';
+                document.getElementById(linkId).href = e.target.value;
+                const varName = id === 'scriptFontUrlInput' ? '--script-font-family' :
+                    id === 'roleFontUrlInput' ? '--role-font-family' :
+                    '--body-font-family';
+                document.documentElement.style.setProperty(varName,
+                    `'${deriveFontName(e.target.value)}', serif`);
+            };
+        });
+        document.getElementById('hemImageUrl').oninput = e => {
+            document.documentElement.style.setProperty('--hem-image-url', `url('${e.target.value}')`);
+        };
+        document.getElementById('hemBlendMode').onchange = e => {
+            document.documentElement.style.setProperty('--hem-blend-mode', e.target.value);
+        };
+        document.getElementById('bgImageUrl').oninput = e => {
+            document.getElementById('bgBaseImage').src = e.target.value;
+        };
+        document.getElementById('bgGrungeUrl').oninput = e => {
+            document.documentElement.style.setProperty('--bg-grunge-url', `url('${e.target.value}')`);
+        };
+        document.getElementById('bgMagicUrl').oninput = e => {
+            document.documentElement.style.setProperty('--bg-magic-url', `url('${e.target.value}')`);
+        };
+        document.getElementById('bgMagicOpacity').oninput = e => {
+            const o = e.target.value / 100;
+            document.documentElement.style.setProperty('--bg-magic-opacity', o.toString());
+            document.getElementById('magicCircleOverlay').style.opacity = o;
+        };
+        document.getElementById('hueRotation').oninput = e => {
+            document.documentElement.style.setProperty('--hue-rotation', e.target.value + 'deg');
+        };
+
+        // Re-render when the checkbox changes
+        document.getElementById('useTownhallIcons').onchange = () => {
+            document.getElementById('load').click();
+        };
+
+        // Main load/render routine
+        document.getElementById('load').onclick = () => {
+            const useTownhallIcons = document.getElementById('useTownhallIcons').unchecked;
+            let arr;
+            try {
+                arr = JSON.parse(document.getElementById('json-input').value);
+            } catch {
+                return alert('Invalid JSON');
+            }
+            if (!Array.isArray(arr) || arr.length === 0) {
+                return alert('JSON must be an array with at least a meta object');
+            }
+            const [meta, ...rawItems] = arr;
+            // apply script title override if provided
+            const override = document.getElementById('titleOverride').value.trim();
+            const title = override || ((meta && meta.name) ? meta.name : 'Script Title');
+            document.querySelector('#preview h1').textContent = title;
+            doubleAlign();
+
+            // new feature: deterministic hue based on script title
+            const hue = computeHueRotation(title);
+            document.documentElement.style.setProperty('--hue-rotation', hue + 'deg');
+            document.getElementById('hueRotation').value = hue;
+
+            const ids = rawItems.map(item => {
+                let idStr = '';
+                if (typeof item === 'string') {
+                    idStr = item;
+                } else if (item && typeof item.id === 'string') {
+                    idStr = item.id;
+                } else {
+                    return '';
+                }
+                return idStr.replace(/[\s_-]/g, '').toLowerCase();
+            }).filter(id => id);
+
+            const defs = ids.map(id => {
+                const def = rolesById[id];
+                if (!def) return null;
+                const scraped = scrapedById[id] || {};
+                return {
+                    id,
+                    name: scraped.name || def.name,
+                    team: def.team,
+                    big_icon: scraped.big_icon,
+                    ability: scraped.ability
+                };
+            }).filter(Boolean);
+
+            const grouped = GROUP_ORDER.map(g => {
+                const sing = g.endsWith('s') ? g.slice(0, -1) : g;
+                return {
+                    group: g,
+                    roles: defs.filter(d => d.team === sing)
+                };
+            });
+
+            const tablesDiv = document.querySelector('#preview .tables');
+            tablesDiv.innerHTML = '';
+            const cellH = applyConfig();
+
+            grouped.forEach((cat, idx) => {
+                const tbl = document.createElement('table');
+                tbl.dataset.group = cat.group;
+                let row;
+                cat.roles.forEach((r, i) => {
+                    if (i % 2 === 0) row = document.createElement('tr');
+                    const td = document.createElement('td');
+
+                    // choose icon URL
+                    let iconUrl = '';
+                    if (useTownhallIcons) {
+                        iconUrl = altIconsById[r.id] || '';
+                    } else {
+                        iconUrl = r.big_icon ? WIKI_BASE_URL + r.big_icon : '';
+                    }
+
+                    const color = (cat.group === 'minions' || cat.group === 'demons') ? '#5C1F22' : '#0646ad';
+                    const abilityHtml = r.ability ? r.ability.replace(/\n/g, '<br>') : '';
+                    td.innerHTML = `
             <div class="cell">
               ${iconUrl
                 ? `<img class="icon" src="${iconUrl}" alt="">`
@@ -616,98 +752,99 @@
                 <div class="ability">${abilityHtml}</div>
               </div>
             </div>`;
-          row.appendChild(td);
-          if (i===cat.roles.length-1 && i%2===0) row.appendChild(document.createElement('td'));
-          if (i%2===1 || i===cat.roles.length-1) tbl.appendChild(row);
-        });
-        tablesDiv.appendChild(tbl);
-        if (idx < grouped.length - 1) {
-          const sep = document.createElement('div');
-          sep.className = 'separator';
-          tablesDiv.appendChild(sep);
+                    row.appendChild(td);
+                    if (i === cat.roles.length - 1 && i % 2 === 0) row.appendChild(document.createElement('td'));
+                    if (i % 2 === 1 || i === cat.roles.length - 1) tbl.appendChild(row);
+                });
+                tablesDiv.appendChild(tbl);
+                if (idx < grouped.length - 1) {
+                    const sep = document.createElement('div');
+                    sep.className = 'separator';
+                    tablesDiv.appendChild(sep);
+                }
+            });
+
+            doubleAlign();
+        };
+
+        function alignAndSize() {
+            const pr = document.getElementById('preview').getBoundingClientRect();
+            const cellH = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--cell-height'));
+            GROUP_ORDER.forEach(group => {
+                const tbl = document.querySelector(`table[data-group="${group}"]`);
+                const lbl = document.querySelector(`.label-left[data-group="${group}"]`);
+                if (!tbl || !lbl) return;
+                tbl.style.height = (CONFIG.rows[group] * cellH) + 'px';
+                const tr = tbl.getBoundingClientRect();
+                const cy = tr.top + tr.height / 2 - pr.top;
+                lbl.style.top = (cy - lbl.offsetHeight / 2) + 'px';
+            });
         }
-      });
 
-      doubleAlign();
-    };
+        // render the script-selection radio buttons
+        function renderScriptSelection(data) {
+            const base3 = ['Trouble Brewing', 'Sects & Violets', 'Bad Moon Rising'];
+            const baseFs = document.getElementById('base3-fieldset');
+            const carFs = document.getElementById('carousel15-fieldset');
+            // clear any existing entries
+            baseFs.querySelectorAll('div').forEach(d => d.remove());
+            carFs.querySelectorAll('div').forEach(d => d.remove());
+            Object.keys(data).forEach(name => {
+                const input = document.createElement('input');
+                input.type = 'radio';
+                input.name = 'script-select';
+                input.value = name;
+                input.id = 'script-' + name.replace(/\s+/g, '-').toLowerCase();
+                const label = document.createElement('label');
+                label.htmlFor = input.id;
+                label.textContent = name;
+                const wrapper = document.createElement('div');
+                wrapper.appendChild(input);
+                wrapper.appendChild(label);
+                if (base3.includes(name)) baseFs.appendChild(wrapper);
+                else carFs.appendChild(wrapper);
+                input.addEventListener('change', () => {
+                    document.getElementById('json-input').value = JSON.stringify(data[name], null, 2);
+                    document.getElementById('load').click();
+                });
+            });
+        }
 
-    function alignAndSize() {
-      const pr = document.getElementById('preview').getBoundingClientRect();
-      const cellH = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--cell-height'));
-      GROUP_ORDER.forEach(group => {
-        const tbl = document.querySelector(`table[data-group="${group}"]`);
-        const lbl = document.querySelector(`.label-left[data-group="${group}"]`);
-        if (!tbl || !lbl) return;
-        tbl.style.height = (CONFIG.rows[group] * cellH) + 'px';
-        const tr = tbl.getBoundingClientRect();
-        const cy = tr.top + tr.height / 2 - pr.top;
-        lbl.style.top = (cy - lbl.offsetHeight / 2) + 'px';
-      });
-    }
+        // Initialize: fetch roles, scraped abilities, and alternate icons, then render
+        async function init() {
+            try {
+                const [rolesData, scrapedData, altData] = await Promise.all([
+                    fetch(ROLES_URL).then(r => r.json()),
+                    fetch(GIST_URL).then(r => r.json()),
+                    fetch(ALT_URL).then(r => r.json())
+                ]);
+                rolesData.forEach(r => rolesById[r.id] = r);
+                scrapedData.forEach(e => {
+                    scrapedById[e.id] = {
+                        name: e.name,
+                        big_icon: e.scraped.big_icon,
+                        ability: e.scraped.summary.ability
+                    };
+                });
+                altData.forEach(e => {
+                    altIconsById[e.id.toLowerCase()] = e["townsquare-icon"];
+                });
+            } catch (e) {
+                console.error('Failed to load JSON data', e);
+            }
+            document.getElementById('load').click();
+        }
 
-    // render the script-selection radio buttons
-    function renderScriptSelection(data) {
-      const base3 = ['Trouble Brewing','Sects & Violets','Bad Moon Rising'];
-      const baseFs = document.getElementById('base3-fieldset');
-      const carFs = document.getElementById('carousel15-fieldset');
-      // clear any existing entries
-      baseFs.querySelectorAll('div').forEach(d=>d.remove());
-      carFs.querySelectorAll('div').forEach(d=>d.remove());
-      Object.keys(data).forEach(name => {
-        const input = document.createElement('input');
-        input.type = 'radio';
-        input.name = 'script-select';
-        input.value = name;
-        input.id = 'script-' + name.replace(/\s+/g,'-').toLowerCase();
-        const label = document.createElement('label');
-        label.htmlFor = input.id;
-        label.textContent = name;
-        const wrapper = document.createElement('div');
-        wrapper.appendChild(input);
-        wrapper.appendChild(label);
-        if (base3.includes(name)) baseFs.appendChild(wrapper);
-        else carFs.appendChild(wrapper);
-        input.addEventListener('change', () => {
-          document.getElementById('json-input').value = JSON.stringify(data[name], null, 2);
-          document.getElementById('load').click();
+        window.addEventListener('resize', doubleAlign);
+        window.addEventListener('load', init);
+        // fetch and render the script-selection on load
+        window.addEventListener('load', () => {
+            fetch(SUPER_JSON_URL)
+                .then(r => r.json())
+                .then(data => renderScriptSelection(data))
+                .catch(e => console.error('Failed to load super JSON', e));
         });
-      });
-    }
-
-    // Initialize: fetch roles, scraped abilities, and alternate icons, then render
-    async function init() {
-      try {
-        const [rolesData, scrapedData, altData] = await Promise.all([
-          fetch(ROLES_URL).then(r => r.json()),
-          fetch(GIST_URL).then(r => r.json()),
-          fetch(ALT_URL).then(r => r.json())
-        ]);
-        rolesData.forEach(r => rolesById[r.id] = r);
-        scrapedData.forEach(e => {
-          scrapedById[e.id] = {
-            name: e.name,
-            big_icon: e.scraped.big_icon,
-            ability: e.scraped.summary.ability
-          };
-        });
-        altData.forEach(e => {
-          altIconsById[e.id.toLowerCase()] = e["townsquare-icon"];
-        });
-      } catch (e) {
-        console.error('Failed to load JSON data', e);
-      }
-      document.getElementById('load').click();
-    }
-
-    window.addEventListener('resize', doubleAlign);
-    window.addEventListener('load', init);
-    // fetch and render the script-selection on load
-    window.addEventListener('load', () => {
-      fetch(SUPER_JSON_URL)
-        .then(r => r.json())
-        .then(data => renderScriptSelection(data))
-        .catch(e => console.error('Failed to load super JSON', e));
-    });
-  </script>
+    </script>
 </body>
+
 </html>
